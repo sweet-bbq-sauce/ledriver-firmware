@@ -1,12 +1,17 @@
-idf_component_register(
-    SRCS
-        "main.c"
+set(SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/main.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
+)
 
-    INCLUDE_DIRS
-        "."
+idf_component_register(
+    SRCS ${SOURCES}
+    INCLUDE_DIRS "."
 
     REQUIRES
         spiffs
+        esp_wifi
+        esp_netif
+        nvs_flash
 )
 
 find_program(NPM_EXECUTABLE npm REQUIRED)

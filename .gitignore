@@ -3,5 +3,6 @@
 build/
 node_modules/
 package-lock.json
+sdkconfig
 sdkconfig.old
 webpanel/dist/
