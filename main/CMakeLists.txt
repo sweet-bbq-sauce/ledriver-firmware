@@ -1,0 +1,36 @@
+idf_component_register(
+    SRCS
+        "main.c"
+
+    INCLUDE_DIRS
+        "."
+
+    REQUIRES
+        spiffs
+)
+
+find_program(NPM_EXECUTABLE npm REQUIRED)
+
+execute_process(
+    COMMAND ${NPM_EXECUTABLE} install
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE NPM_INSTALL_RESULT
+)
+
+if(NOT NPM_INSTALL_RESULT EQUAL 0)
+    message(FATAL_ERROR "npm install failed with exit code ${NPM_INSTALL_RESULT}")
+endif()
+
+add_custom_target(webpanel_build
+    COMMAND ${NPM_EXECUTABLE} run build:release
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    USES_TERMINAL
+    VERBATIM
+)
+
+spiffs_create_partition_image(
+    webpanel
+    ../webpanel/dist
+    FLASH_IN_PROJECT
+    DEPENDS webpanel_build
+)
