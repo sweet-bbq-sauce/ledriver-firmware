@@ -47,5 +47,6 @@ void app_main(void) {
     mount_spiffs();
 
     result = connect_to_wifi(CONFIG_APP_WIFI_SSID, CONFIG_APP_WIFI_PASSWORD, 2);
-    printf("Error: %d", result);
+    if (result != ESP_OK)
+        ESP_LOGE("main", "connect_to_wifi: %s", esp_err_to_name(result));
 }
