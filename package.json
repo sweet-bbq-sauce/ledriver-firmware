@@ -16,7 +16,9 @@
   "main": "index.js",
   "scripts": {
     "serve": "webpack serve",
-    "build:release": "webpack --mode production"
+    "build:release": "webpack --mode production",
+    "release": "mkdir -p ./dist&&cp ./build/ledriver-firmware.bin ./dist/image.bin&&cp ./build/webpanel.bin ./dist/webpanel.bin",
+    "ota": "node ./tools/ota_server.js"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
@@ -30,6 +32,8 @@
     "webpack-dev-server": "^5.2.3"
   },
   "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.10.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   }

@@ -8,4 +8,8 @@ config APP_WIFI_PASSWORD
     string "WiFi password"
     default ""
 
+config APP_OTA_SERVER
+    string "OTA server host"
+    default ""
+
 endmenu

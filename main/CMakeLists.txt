@@ -1,5 +1,9 @@
 set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/main.c"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/ota/manifest.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/ota/ota.c"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
 )
 
@@ -12,6 +16,9 @@ idf_component_register(
         esp_wifi
         esp_netif
         nvs_flash
+        esp_http_client
+        app_update
+        esp_https_ota
 )
 
 find_program(NPM_EXECUTABLE npm REQUIRED)

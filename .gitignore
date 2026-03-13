@@ -1,6 +1,8 @@
 .cache/
 .vscode/
 build/
+dependencies.lock
+managed_components/
 node_modules/
 package-lock.json
 sdkconfig
