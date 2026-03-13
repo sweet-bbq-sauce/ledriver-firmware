@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <esp_err.h>
 #include <esp_http_client.h>
@@ -7,12 +8,38 @@
 
 #include <cJSON.h>
 
+#include <ota/manifest.h>
 #include <sdkconfig.h>
 
 #define MAX_MANIFEST 512
 
-esp_err_t ledriver_ota_get_manifest(cJSON** manifest) {
-    *manifest = NULL;
+static ledriver_ota_manifest_t* create_manifest(const cJSON* object) {
+    if (!cJSON_IsObject(object))
+        return NULL;
+
+    cJSON* version = cJSON_GetObjectItemCaseSensitive(object, "version");
+    if (!cJSON_IsString(version))
+        return NULL;
+
+    ledriver_ota_manifest_t* manifest = malloc(sizeof(ledriver_ota_manifest_t));
+    if (!manifest)
+        return NULL;
+
+    manifest->version = malloc(strlen(version->valuestring) + 1);
+    if (!manifest->version) {
+        free(manifest);
+        return NULL;
+    }
+
+    strcpy(manifest->version, version->valuestring);
+
+    return manifest;
+}
+
+esp_err_t ledriver_ota_get_manifest(ledriver_ota_manifest_t** firmware,
+                                    ledriver_ota_manifest_t** webpanel) {
+    *firmware = NULL;
+    *webpanel = NULL;
     const esp_http_client_config_t config = {.host = CONFIG_APP_OTA_SERVER,
                                              .path = "/manifest.json",
                                              .port = 8888,
@@ -87,10 +114,38 @@ esp_err_t ledriver_ota_get_manifest(cJSON** manifest) {
     esp_http_client_close(client);
     esp_http_client_cleanup(client);
 
-    *manifest = cJSON_Parse(content);
+    cJSON* root_object = cJSON_Parse(content);
     free(content);
-    if (!*manifest)
-        return ESP_ERR_INVALID_RESPONSE;
+    if (!root_object)
+        return ESP_FAIL;
 
+    cJSON* firmware_object = cJSON_GetObjectItemCaseSensitive(root_object, "firmware");
+    cJSON* webpanel_object = cJSON_GetObjectItemCaseSensitive(root_object, "webpanel");
+
+    *firmware = create_manifest(firmware_object);
+    if (!*firmware) {
+        cJSON_Delete(root_object);
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    *webpanel = create_manifest(webpanel_object);
+    if (!*webpanel) {
+        cJSON_Delete(root_object);
+        ledriver_ota_free_manifest(*firmware);
+        *firmware = NULL;
+        return ESP_ERR_INVALID_RESPONSE;
+    }
+
+    cJSON_Delete(root_object);
     return ESP_OK;
+}
+
+void ledriver_ota_free_manifest(ledriver_ota_manifest_t* manifest) {
+    if (!manifest)
+        return;
+
+    if (manifest->version)
+        free(manifest->version);
+
+    free(manifest);
 }

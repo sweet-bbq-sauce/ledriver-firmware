@@ -10,7 +10,12 @@ app.use(express.static(path.join(__dirname, "../dist")));
 
 app.get('/manifest.json', (req, res) => {
     res.json({
-        test: 420
+        firmware: {
+            version: 'v0.1'
+        },
+        webpanel: {
+            version: 'v0.69'
+        }
     });
 })
 
