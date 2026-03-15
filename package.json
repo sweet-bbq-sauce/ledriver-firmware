@@ -17,8 +17,8 @@
   "scripts": {
     "serve": "webpack serve",
     "build:release": "webpack --mode production",
-    "release": "mkdir -p ./dist&&cp ./build/ledriver-firmware.bin ./dist/image.bin&&cp ./build/webpanel.bin ./dist/webpanel.bin",
-    "ota": "node ./tools/ota_server.js"
+    "ota:release": "node ./ota_server/release.js",
+    "ota:run": "node ./ota_server/server.js 0.0.0.0 8888"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",

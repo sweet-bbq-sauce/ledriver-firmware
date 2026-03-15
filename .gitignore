@@ -8,3 +8,6 @@ package-lock.json
 sdkconfig
 sdkconfig.old
 webpanel/dist/
+
+# OTA server
+ota_server/public/

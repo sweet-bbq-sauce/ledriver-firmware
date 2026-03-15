@@ -16,14 +16,11 @@ esp_err_t ledriver_ota_check_and_update(void) {
         return ESP_FAIL;
     }
 
-    if (firmware) {
-        ESP_LOGI(TAG, "Firmware version: %s", firmware->version);
-        ledriver_ota_free_manifest(firmware);
-    }
-    if (webpanel) {
-        ESP_LOGI(TAG, "Webpanel version: %s", webpanel->version);
-        ledriver_ota_free_manifest(webpanel);
-    }
+    ESP_LOGI(TAG, "Firmware version: %s", firmware->version);
+    ESP_LOGI(TAG, "Webpanel version: %s", webpanel->version);
+
+    ledriver_ota_free_manifest(firmware);
+    ledriver_ota_free_manifest(webpanel);
 
     return ESP_OK;
 }
