@@ -16,8 +16,10 @@ esp_err_t ledriver_ota_check_and_update(void) {
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Firmware version: %s", firmware->version);
-    ESP_LOGI(TAG, "Webpanel version: %s", webpanel->version);
+    ESP_LOGI(TAG, "Firmware version: %s sha256:%s %s", firmware->version, firmware->sha256,
+             firmware->path);
+    ESP_LOGI(TAG, "Webpanel version: %s sha256:%s %s", webpanel->version, webpanel->sha256,
+             webpanel->path);
 
     ledriver_ota_free_manifest(firmware);
     ledriver_ota_free_manifest(webpanel);

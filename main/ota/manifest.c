@@ -21,6 +21,14 @@ static ledriver_ota_manifest_t* create_manifest(const cJSON* object) {
     if (!cJSON_IsString(version))
         return NULL;
 
+    cJSON* sha256 = cJSON_GetObjectItemCaseSensitive(object, "sha256");
+    if (!cJSON_IsString(sha256))
+        return NULL;
+
+    cJSON* path = cJSON_GetObjectItemCaseSensitive(object, "path");
+    if (!cJSON_IsString(path))
+        return NULL;
+
     ledriver_ota_manifest_t* manifest = malloc(sizeof(ledriver_ota_manifest_t));
     if (!manifest)
         return NULL;
@@ -31,7 +39,24 @@ static ledriver_ota_manifest_t* create_manifest(const cJSON* object) {
         return NULL;
     }
 
+    manifest->sha256 = malloc(strlen(sha256->valuestring) + 1);
+    if (!manifest->sha256) {
+        free(manifest->version);
+        free(manifest);
+        return NULL;
+    }
+
+    manifest->path = malloc(strlen(path->valuestring) + 1);
+    if (!manifest->path) {
+        free(manifest->version);
+        free(manifest->sha256);
+        free(manifest);
+        return NULL;
+    }
+
     strcpy(manifest->version, version->valuestring);
+    strcpy(manifest->sha256, sha256->valuestring);
+    strcpy(manifest->path, path->valuestring);
 
     return manifest;
 }
@@ -146,6 +171,12 @@ void ledriver_ota_free_manifest(ledriver_ota_manifest_t* manifest) {
 
     if (manifest->version)
         free(manifest->version);
+
+    if (manifest->sha256)
+        free(manifest->sha256);
+
+    if (manifest->path)
+        free(manifest->path);
 
     free(manifest);
 }
