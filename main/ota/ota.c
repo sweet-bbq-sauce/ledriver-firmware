@@ -49,7 +49,7 @@ esp_err_t ledriver_ota_check_and_update(void) {
         return result;
 
     // Not used yet.
-    ledriver_ota_free_manifest(webpanel);
+    ledriver_ota_free_manifest(&webpanel);
 
     if (strcmp(local_firmware_sha256, firmware->sha256) != 0) {
         ESP_LOGI(TAG, "Firmware update available. New version: '%s'.", firmware->version);
@@ -57,7 +57,7 @@ esp_err_t ledriver_ota_check_and_update(void) {
         char url[256];
         snprintf(url, sizeof(url), "http://%s:8888%s", CONFIG_APP_OTA_SERVER, firmware->path);
 
-        ledriver_ota_free_manifest(firmware);
+        ledriver_ota_free_manifest(&firmware);
 
         const esp_http_client_config_t http_config = {.url = url, .timeout_ms = 10000};
         const esp_https_ota_config_t ota_config = {.http_config = &http_config};
@@ -71,6 +71,6 @@ esp_err_t ledriver_ota_check_and_update(void) {
         return result;
     }
 
-    ledriver_ota_free_manifest(firmware);
+    ledriver_ota_free_manifest(&firmware);
     return ESP_OK;
 }

@@ -156,7 +156,7 @@ esp_err_t ledriver_ota_get_manifest(ledriver_ota_manifest_t** firmware,
     *webpanel = create_manifest(webpanel_object);
     if (!*webpanel) {
         cJSON_Delete(root_object);
-        ledriver_ota_free_manifest(*firmware);
+        ledriver_ota_free_manifest(firmware);
         *firmware = NULL;
         return ESP_ERR_INVALID_RESPONSE;
     }
@@ -165,12 +165,15 @@ esp_err_t ledriver_ota_get_manifest(ledriver_ota_manifest_t** firmware,
     return ESP_OK;
 }
 
-void ledriver_ota_free_manifest(ledriver_ota_manifest_t* manifest) {
-    if (!manifest)
+void ledriver_ota_free_manifest(ledriver_ota_manifest_t** manifest) {
+    if (!manifest || !*manifest)
         return;
 
-    free(manifest->version);
-    free(manifest->sha256);
-    free(manifest->path);
-    free(manifest);
+    ledriver_ota_manifest_t* ptr = *manifest;
+    *manifest = NULL;
+
+    free(ptr->version);
+    free(ptr->sha256);
+    free(ptr->path);
+    free(ptr);
 }
