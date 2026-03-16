@@ -5,6 +5,8 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/ota/ota.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/ota/webpanel.c"
 
+    "${CMAKE_CURRENT_SOURCE_DIR}/util/sntp.c"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
 )
 
