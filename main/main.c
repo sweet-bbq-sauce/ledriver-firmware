@@ -19,7 +19,7 @@ esp_err_t init_sntp(size_t timeout_ms) {
     setenv("TZ", "CET-1CEST,M3.5.0/2,M10.5.0/3", 1);
     tzset();
 
-    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+    const esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
     esp_netif_sntp_init(&config);
 
     return esp_netif_sntp_sync_wait(pdMS_TO_TICKS(timeout_ms));
@@ -35,13 +35,13 @@ void app_main(void) {
 
     result = connect_to_wifi(CONFIG_APP_WIFI_SSID, CONFIG_APP_WIFI_PASSWORD, 2);
     if (result != ESP_OK)
-        ESP_LOGE(TAG, "connect_to_wifi: %s", esp_err_to_name(result));
+        ESP_LOGE(TAG, "WiFi connect error: %s", esp_err_to_name(result));
 
     init_sntp(10000);
 
     if (result == ESP_OK) {
         result = ledriver_ota_check_and_update();
         if (result != ESP_OK)
-            ESP_LOGE(TAG, "ledriver_ota_check_and_update: %s", esp_err_to_name(result));
+            ESP_LOGE(TAG, "Firmware update error: %s", esp_err_to_name(result));
     }
 }
