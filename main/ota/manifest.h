@@ -2,8 +2,6 @@
 
 #include <esp_err.h>
 
-#include <cJSON.h>
-
 typedef struct {
     char* version;
     char* sha256;
