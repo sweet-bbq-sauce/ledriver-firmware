@@ -169,14 +169,8 @@ void ledriver_ota_free_manifest(ledriver_ota_manifest_t* manifest) {
     if (!manifest)
         return;
 
-    if (manifest->version)
-        free(manifest->version);
-
-    if (manifest->sha256)
-        free(manifest->sha256);
-
-    if (manifest->path)
-        free(manifest->path);
-
+    free(manifest->version);
+    free(manifest->sha256);
+    free(manifest->path);
     free(manifest);
 }
