@@ -19,7 +19,7 @@ static httpd_handle_t server = NULL;
 static esp_err_t httpd_get_handler(httpd_req_t* req) {
     assert(req);
 
-    ESP_LOGI(TAG, "URI: %s", req->uri);
+    //ESP_LOGI(TAG, "URI: %s", req->uri);
 
     ledriver_httpd_resource_t resource;
     esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);

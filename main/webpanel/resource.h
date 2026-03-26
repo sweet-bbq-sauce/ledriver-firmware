@@ -10,5 +10,6 @@ typedef struct {
     bool compressed;
 } ledriver_httpd_resource_t;
 
-esp_err_t ledriver_httpd_resource_get_from_uri(ledriver_httpd_resource_t* resource, const char* uri);
+esp_err_t ledriver_httpd_resource_get_from_uri(ledriver_httpd_resource_t* resource,
+                                               const char* uri);
 void ledriver_httpd_resource_free(ledriver_httpd_resource_t* resource);
