@@ -1,7 +1,7 @@
 #include <assert.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <esp_err.h>
@@ -9,115 +9,20 @@
 #include <esp_log.h>
 #include <http_parser.h>
 
-#include <sys/fcntl.h>
-#include <sys/stat.h>
 #include <unistd.h>
+
+#include <webpanel/resource.h>
 
 static const char* TAG = "httpd";
 static httpd_handle_t server = NULL;
-
-#define WEBPANEL_ROOT "/webpanel"
-
-static bool has_ext_before_gz(const char* name, const char* ext) {
-    const size_t name_len = strlen(name);
-    const size_t ext_len = strlen(ext);
-    const size_t base_len = name_len - 3;
-
-    if (name_len < 3 || strcmp(name + base_len, ".gz") != 0 || base_len < ext_len)
-        return false;
-
-    return memcmp(name + base_len - ext_len, ext, ext_len) == 0;
-}
-
-static const char* set_content_type_from_path(const char* filename) {
-    if (has_ext_before_gz(filename, ".html"))
-        return "text/html; charset=utf-8";
-    else if (has_ext_before_gz(filename, ".css"))
-        return "text/css";
-    else if (has_ext_before_gz(filename, ".js"))
-        return "application/javascript";
-    else if (has_ext_before_gz(filename, ".json"))
-        return "application/json";
-    else if (has_ext_before_gz(filename, ".png"))
-        return "image/png";
-    else if (has_ext_before_gz(filename, ".jpg") || has_ext_before_gz(filename, ".jpeg"))
-        return "image/jpeg";
-    else if (has_ext_before_gz(filename, ".svg"))
-        return "image/svg+xml";
-    else if (has_ext_before_gz(filename, ".txt"))
-        return "text/plain; charset=utf-8";
-
-    return "application/octet-stream";
-}
-
-typedef struct {
-    FILE* fd;
-    const char* mime;
-    bool gzipped;
-} file_source_t;
-
-static void free_resource(file_source_t* resource) {
-    if (resource->fd) {
-        fclose(resource->fd);
-        resource->fd = NULL;
-    }
-    resource->gzipped = false;
-}
-
-static esp_err_t get_resource(const char* resource, file_source_t* result) {
-    assert(resource);
-    assert(result);
-
-    if (!resource)
-        return ESP_ERR_INVALID_ARG;
-    if (!result)
-        return ESP_ERR_INVALID_ARG;
-
-    result->fd = NULL;
-    result->mime = NULL;
-    result->gzipped = false;
-
-    if (strcmp(resource, "/") == 0)
-        resource = "/index.html";
-
-    const size_t len = strlen(WEBPANEL_ROOT) + strlen(resource) + 4; // "/webpanel/<PATH>[.gz]\0"
-    char* path = malloc(len);
-    if (!path)
-        return ESP_ERR_NO_MEM;
-
-    snprintf(path, len, "%s%s.gz", WEBPANEL_ROOT, resource);
-    const char* mime = set_content_type_from_path(path);
-
-    FILE* fd = fopen(path, "rb");
-    if (fd) {
-        free(path);
-        result->fd = fd;
-        result->mime = mime;
-        result->gzipped = true;
-        return ESP_OK;
-    }
-
-    path[len - 4] = '\0';
-    fd = fopen(path, "rb");
-    if (fd) {
-        free(path);
-        result->fd = fd;
-        result->mime = mime;
-        result->gzipped = false;
-        return ESP_OK;
-    }
-
-    free(path);
-    return ESP_ERR_NOT_FOUND;
-}
 
 static esp_err_t httpd_get_handler(httpd_req_t* req) {
     assert(req);
 
     ESP_LOGI(TAG, "URI: %s", req->uri);
 
-    file_source_t src;
-    esp_err_t result = get_resource(req->uri, &src);
+    ledriver_httpd_resource_t resource;
+    esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);
     if (result != ESP_OK)
         ESP_LOGE(TAG, "error: %s", esp_err_to_name(result));
     if (result == ESP_ERR_NOT_FOUND) {
@@ -128,23 +33,41 @@ static esp_err_t httpd_get_handler(httpd_req_t* req) {
         return result;
     }
 
-    ESP_LOGI(TAG, "mime: %s", src.mime);
-    httpd_resp_set_type(req, src.mime);
+    ESP_LOGI(TAG, "mime: %s", resource.mime);
+    result = httpd_resp_set_type(req, resource.mime);
+    if (result != ESP_OK) {
+        ledriver_httpd_resource_free(&resource);
+        return result;
+    }
 
-    if (src.gzipped)
-        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-
-    char buffer[512];
-    size_t n;
-    while ((n = fread(buffer, 1, sizeof(buffer), src.fd)) > 0) {
-        esp_err_t err = httpd_resp_send_chunk(req, buffer, n);
-        if (err != ESP_OK) {
-            free_resource(&src);
-            return err;
+    if (resource.compressed) {
+        result = httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        if (result != ESP_OK) {
+            ledriver_httpd_resource_free(&resource);
+            return result;
         }
     }
 
-    free_resource(&src);
+    char buffer[512];
+    for (;;) {
+        const ssize_t n = read(resource.fd, buffer, sizeof(buffer));
+
+        if (n > 0) {
+            result = httpd_resp_send_chunk(req, buffer, n);
+            if (result != ESP_OK) {
+                ledriver_httpd_resource_free(&resource);
+                return result;
+            }
+        } else if (n == 0)
+            break;
+        else {
+            ESP_LOGE(TAG, "resource read: %s", strerror(errno));
+            ledriver_httpd_resource_free(&resource);
+            return ESP_FAIL;
+        }
+    }
+
+    ledriver_httpd_resource_free(&resource);
     return httpd_resp_send_chunk(req, NULL, 0);
 }
 

@@ -9,6 +9,7 @@ set(SOURCES
 
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/httpd.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/partition.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/resource.c"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
 )
