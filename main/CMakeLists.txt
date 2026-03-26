@@ -7,6 +7,9 @@ set(SOURCES
 
     "${CMAKE_CURRENT_SOURCE_DIR}/util/sntp.c"
 
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/httpd.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/partition.c"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
 )
 
@@ -20,6 +23,7 @@ idf_component_register(
         esp_netif
         nvs_flash
         esp_http_client
+        esp_http_server
         app_update
         esp_https_ota
 )
