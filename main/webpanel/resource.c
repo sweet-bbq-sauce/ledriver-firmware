@@ -58,8 +58,6 @@ esp_err_t ledriver_httpd_resource_get_from_uri(ledriver_httpd_resource_t* resour
     if (!resource || !uri)
         return ESP_ERR_INVALID_ARG;
 
-    ledriver_httpd_resource_free(resource);
-
     if (strcmp(uri, "/") == 0)
         uri = "/index.html";
 
