@@ -11,6 +11,8 @@
 
 #include <unistd.h>
 
+#include <sdkconfig.h>
+
 #include <webpanel/resource.h>
 
 static const char* TAG = "httpd";
@@ -18,8 +20,6 @@ static httpd_handle_t server = NULL;
 
 static esp_err_t httpd_get_handler(httpd_req_t* req) {
     assert(req);
-
-    //ESP_LOGI(TAG, "URI: %s", req->uri);
 
     ledriver_httpd_resource_t resource;
     esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);
@@ -33,7 +33,6 @@ static esp_err_t httpd_get_handler(httpd_req_t* req) {
         return result;
     }
 
-    ESP_LOGI(TAG, "mime: %s", resource.mime);
     result = httpd_resp_set_type(req, resource.mime);
     if (result != ESP_OK) {
         ledriver_httpd_resource_free(&resource);
@@ -46,6 +45,12 @@ static esp_err_t httpd_get_handler(httpd_req_t* req) {
             ledriver_httpd_resource_free(&resource);
             return result;
         }
+    }
+
+    result = httpd_resp_set_hdr(req, "Server", "LEDriver " CONFIG_APP_PROJECT_VER);
+    if (result != ESP_OK) {
+        ledriver_httpd_resource_free(&resource);
+        return result;
     }
 
     char buffer[512];
