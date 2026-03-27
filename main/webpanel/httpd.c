@@ -7,7 +7,6 @@
 #include <esp_err.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
-#include <http_parser.h>
 
 #include <unistd.h>
 
@@ -21,7 +20,10 @@ static httpd_handle_t server = NULL;
 static esp_err_t httpd_get_handler(httpd_req_t* req) {
     assert(req);
 
-    ledriver_httpd_resource_t resource = {.fd = -1, .mime = NULL, .compressed = false};
+    if (!req)
+        return ESP_ERR_INVALID_ARG;
+
+    ledriver_httpd_resource_t resource = LEDRIVER_RESOURCE_INIT;
     esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);
     if (result != ESP_OK)
         ESP_LOGE(TAG, "error: %s", esp_err_to_name(result));
