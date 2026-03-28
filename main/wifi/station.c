@@ -69,14 +69,14 @@ esp_err_t connect_to_wifi(const char* ssid, const char* password, int retry_num)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    EventBits_t bits =
+    const EventBits_t bits =
         xEventGroupWaitBits(s_wifi_event_group, BIT0 | BIT1, pdFALSE, pdFALSE, portMAX_DELAY);
 
     if (bits & BIT0) {
-        ESP_LOGI(TAG, "Connected to ap:%s pass:%s", ssid, password);
+        ESP_LOGI(TAG, "Connected to SSID:%s", ssid);
         return ESP_OK;
     } else if (bits & BIT1) {
-        ESP_LOGI(TAG, "Can't connect to ap:%s pass:%s", ssid, password);
+        ESP_LOGI(TAG, "Can't connect to SSID:%s", ssid);
         return ESP_ERR_WIFI_NOT_CONNECT;
     } else {
         ESP_LOGI(TAG, "Unexpected event");
