@@ -1,6 +1,8 @@
 set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/main.c"
 
+    "${CMAKE_CURRENT_SOURCE_DIR}/ledc/ledc.c"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/ota/manifest.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/ota/ota.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/ota/webpanel.c"
@@ -27,6 +29,7 @@ idf_component_register(
         esp_http_server
         app_update
         esp_https_ota
+        driver
 )
 
 find_program(NPM_EXECUTABLE npm REQUIRED)

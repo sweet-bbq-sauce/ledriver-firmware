@@ -5,6 +5,7 @@
 #include <sdkconfig.h>
 
 #include <webpanel/partition.h>
+#include <ledc/ledc.h>
 
 static const char* TAG = "main";
 
@@ -37,4 +38,8 @@ void app_main(void) {
     result = ledriver_start_webpanel_server();
     if (result != ESP_OK)
         ESP_LOGE(TAG, "httpd server error: %s", esp_err_to_name(result));
+
+    result = ledriver_ledc_init(25, 26, 27);
+    if (result != ESP_OK)
+        ESP_LOGE(TAG, "LEDC init error: %s", esp_err_to_name(result));
 }
