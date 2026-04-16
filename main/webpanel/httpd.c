@@ -14,6 +14,8 @@
 
 #include <webpanel/resource.h>
 
+esp_err_t ledriver_ota_check_and_update(void);
+
 static const char* TAG = "httpd";
 static httpd_handle_t server = NULL;
 
@@ -78,6 +80,18 @@ static esp_err_t httpd_get_handler(httpd_req_t* req) {
     return httpd_resp_send_chunk(req, NULL, 0);
 }
 
+static void ota_task(void *arg) {
+    ledriver_ota_check_and_update();
+    vTaskDelete(NULL);
+}
+
+static esp_err_t httpd_update_handler(httpd_req_t *req) {
+    httpd_resp_set_status(req, "202 Accepted");
+    httpd_resp_sendstr(req, "OTA started");
+    xTaskCreate(ota_task, "ota_task", 8192, NULL, 5, NULL);
+    return ESP_OK;
+}
+
 esp_err_t ledriver_start_webpanel_server(void) {
     if (server)
         return ESP_OK;
@@ -90,10 +104,20 @@ esp_err_t ledriver_start_webpanel_server(void) {
     if (result != ESP_OK)
         return result;
 
-    const httpd_uri_t uri = {
+    const httpd_uri_t ota_update = {
+        .uri = "/update", .method = HTTP_GET, .handler = httpd_update_handler, .user_ctx = NULL};
+
+    const httpd_uri_t wildcard = {
         .uri = "/*", .method = HTTP_GET, .handler = httpd_get_handler, .user_ctx = NULL};
 
-    result = httpd_register_uri_handler(server, &uri);
+    result = httpd_register_uri_handler(server, &ota_update);
+    if (result != ESP_OK) {
+        httpd_stop(server);
+        server = NULL;
+        return result;
+    }
+
+    result = httpd_register_uri_handler(server, &wildcard);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;
