@@ -9,6 +9,36 @@
 
 <body>
     <div id="root"></div>
+
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'red');"><br>
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'green');"><br>
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');">
+
+    <script>
+        const ws = new WebSocket('/control/rgb');
+
+        var state = {
+            red: 0,
+            green: 0,
+            blue: 0
+        };
+
+        function update_color(slider, color) {
+            const brightness = slider.value;
+            console.log(`${color}: ${brightness} (${Math.round(brightness / 65535 * 100)}%)`);
+
+            state[color] = brightness;
+
+            const buf = new ArrayBuffer(6);
+            const view = new DataView(buf);
+
+            view.setUint16(0, state.red, false);
+            view.setUint16(2, state.green, false);
+            view.setUint16(4, state.blue, false);
+
+            ws.send(buf);
+        }
+    </script>
 </body>
 
 </html>

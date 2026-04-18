@@ -1,0 +1,72 @@
+#include <esp_err.h>
+#include <esp_http_server.h>
+#include <esp_log.h>
+
+#include <assert.h>
+#include <errno.h>
+#include <unistd.h>
+
+#include <webpanel/resource.h>
+
+static const char* TAG = "httpd";
+
+esp_err_t httpd_get_resource_handler(httpd_req_t* req) {
+    assert(req);
+
+    if (!req)
+        return ESP_ERR_INVALID_ARG;
+
+    ledriver_httpd_resource_t resource = LEDRIVER_RESOURCE_INIT;
+    esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);
+    if (result != ESP_OK)
+        ESP_LOGE(TAG, "error: %s", esp_err_to_name(result));
+    if (result == ESP_ERR_NOT_FOUND) {
+        httpd_resp_send_404(req);
+        return ESP_OK;
+    } else if (result != ESP_OK) {
+        httpd_resp_send_500(req);
+        return result;
+    }
+
+    result = httpd_resp_set_type(req, resource.mime);
+    if (result != ESP_OK) {
+        ledriver_httpd_resource_free(&resource);
+        return result;
+    }
+
+    if (resource.compressed) {
+        result = httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+        if (result != ESP_OK) {
+            ledriver_httpd_resource_free(&resource);
+            return result;
+        }
+    }
+
+    result = httpd_resp_set_hdr(req, "Server", "LEDriver " CONFIG_APP_PROJECT_VER);
+    if (result != ESP_OK) {
+        ledriver_httpd_resource_free(&resource);
+        return result;
+    }
+
+    char buffer[512];
+    for (;;) {
+        const ssize_t n = read(resource.fd, buffer, sizeof(buffer));
+
+        if (n > 0) {
+            result = httpd_resp_send_chunk(req, buffer, n);
+            if (result != ESP_OK) {
+                ledriver_httpd_resource_free(&resource);
+                return result;
+            }
+        } else if (n == 0)
+            break;
+        else {
+            ESP_LOGE(TAG, "resource read: %s", strerror(errno));
+            ledriver_httpd_resource_free(&resource);
+            return ESP_FAIL;
+        }
+    }
+
+    ledriver_httpd_resource_free(&resource);
+    return httpd_resp_send_chunk(req, NULL, 0);
+}

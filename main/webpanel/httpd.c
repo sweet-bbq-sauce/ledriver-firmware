@@ -1,8 +1,4 @@
-#include <assert.h>
-#include <errno.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
 
 #include <esp_err.h>
 #include <esp_http_server.h>
@@ -14,83 +10,12 @@
 
 #include <webpanel/resource.h>
 
-esp_err_t ledriver_ota_check_and_update(void);
-
 static const char* TAG = "httpd";
 static httpd_handle_t server = NULL;
 
-static esp_err_t httpd_get_handler(httpd_req_t* req) {
-    assert(req);
-
-    if (!req)
-        return ESP_ERR_INVALID_ARG;
-
-    ledriver_httpd_resource_t resource = LEDRIVER_RESOURCE_INIT;
-    esp_err_t result = ledriver_httpd_resource_get_from_uri(&resource, req->uri);
-    if (result != ESP_OK)
-        ESP_LOGE(TAG, "error: %s", esp_err_to_name(result));
-    if (result == ESP_ERR_NOT_FOUND) {
-        httpd_resp_send_404(req);
-        return ESP_OK;
-    } else if (result != ESP_OK) {
-        httpd_resp_send_500(req);
-        return result;
-    }
-
-    result = httpd_resp_set_type(req, resource.mime);
-    if (result != ESP_OK) {
-        ledriver_httpd_resource_free(&resource);
-        return result;
-    }
-
-    if (resource.compressed) {
-        result = httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-        if (result != ESP_OK) {
-            ledriver_httpd_resource_free(&resource);
-            return result;
-        }
-    }
-
-    result = httpd_resp_set_hdr(req, "Server", "LEDriver " CONFIG_APP_PROJECT_VER);
-    if (result != ESP_OK) {
-        ledriver_httpd_resource_free(&resource);
-        return result;
-    }
-
-    char buffer[512];
-    for (;;) {
-        const ssize_t n = read(resource.fd, buffer, sizeof(buffer));
-
-        if (n > 0) {
-            result = httpd_resp_send_chunk(req, buffer, n);
-            if (result != ESP_OK) {
-                ledriver_httpd_resource_free(&resource);
-                return result;
-            }
-        } else if (n == 0)
-            break;
-        else {
-            ESP_LOGE(TAG, "resource read: %s", strerror(errno));
-            ledriver_httpd_resource_free(&resource);
-            return ESP_FAIL;
-        }
-    }
-
-    ledriver_httpd_resource_free(&resource);
-    return httpd_resp_send_chunk(req, NULL, 0);
-}
-
-static void ota_task(void *arg) {
-    ledriver_ota_check_and_update();
-    vTaskDelete(NULL);
-}
-
-static esp_err_t httpd_update_handler(httpd_req_t *req) {
-    httpd_resp_set_status(req, "202 Accepted");
-    httpd_resp_sendstr(req, "OTA started");
-    xTaskCreate(ota_task, "ota_task", 8192, NULL, 5, NULL);
-    return ESP_OK;
-}
+esp_err_t httpd_ws_rgb_handler(httpd_req_t* req);
+esp_err_t httpd_get_ota_handler(httpd_req_t* req);
+esp_err_t httpd_get_resource_handler(httpd_req_t* req);
 
 esp_err_t ledriver_start_webpanel_server(void) {
     if (server)
@@ -104,13 +29,26 @@ esp_err_t ledriver_start_webpanel_server(void) {
     if (result != ESP_OK)
         return result;
 
-    const httpd_uri_t ota_update = {
-        .uri = "/update", .method = HTTP_GET, .handler = httpd_update_handler, .user_ctx = NULL};
+    const httpd_uri_t ws_rgb_uri = {.uri = "/control/rgb",
+                                    .method = HTTP_GET,
+                                    .handler = httpd_ws_rgb_handler,
+                                    .user_ctx = NULL,
+                                    .is_websocket = true};
+
+    const httpd_uri_t ota_uri = {
+        .uri = "/update", .method = HTTP_GET, .handler = httpd_get_ota_handler, .user_ctx = NULL};
 
     const httpd_uri_t wildcard = {
-        .uri = "/*", .method = HTTP_GET, .handler = httpd_get_handler, .user_ctx = NULL};
+        .uri = "/*", .method = HTTP_GET, .handler = httpd_get_resource_handler, .user_ctx = NULL};
 
-    result = httpd_register_uri_handler(server, &ota_update);
+    result = httpd_register_uri_handler(server, &ws_rgb_uri);
+    if (result != ESP_OK) {
+        httpd_stop(server);
+        server = NULL;
+        return result;
+    }
+
+    result = httpd_register_uri_handler(server, &ota_uri);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;

@@ -62,8 +62,11 @@ esp_err_t ledriver_ledc_init(int r_gpio, int g_gpio, int b_gpio) {
 }
 
 esp_err_t ledriver_ledc_set_red(uint16_t brightness) {
-    esp_err_t result =
-        ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_RED, brightness, 0);
+    esp_err_t result = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_RED, brightness);
+    if (result != ESP_OK)
+        return result;
+
+    result = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_RED);
     if (result != ESP_OK)
         return result;
 
@@ -72,8 +75,11 @@ esp_err_t ledriver_ledc_set_red(uint16_t brightness) {
 }
 
 esp_err_t ledriver_ledc_set_green(uint16_t brightness) {
-    esp_err_t result =
-        ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_GREEN, brightness, 0);
+    esp_err_t result = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_GREEN, brightness);
+    if (result != ESP_OK)
+        return result;
+
+    result = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_GREEN);
     if (result != ESP_OK)
         return result;
 
@@ -82,8 +88,11 @@ esp_err_t ledriver_ledc_set_green(uint16_t brightness) {
 }
 
 esp_err_t ledriver_ledc_set_blue(uint16_t brightness) {
-    esp_err_t result =
-        ledc_set_duty_and_update(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_BLUE, brightness, 0);
+    esp_err_t result = ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_BLUE, brightness);
+    if (result != ESP_OK)
+        return result;
+
+    result = ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_BLUE);
     if (result != ESP_OK)
         return result;
 

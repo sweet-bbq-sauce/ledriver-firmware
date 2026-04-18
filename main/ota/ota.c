@@ -14,6 +14,7 @@
 #include <sdkconfig.h>
 
 #include <ota/manifest.h>
+#include <ota/ota.h>
 #include <ota/webpanel.h>
 
 static const char* TAG = "software update";
