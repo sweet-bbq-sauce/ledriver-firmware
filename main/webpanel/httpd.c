@@ -16,6 +16,7 @@ static httpd_handle_t server = NULL;
 esp_err_t httpd_ws_rgb_handler(httpd_req_t* req);
 esp_err_t httpd_get_ota_handler(httpd_req_t* req);
 esp_err_t httpd_get_resource_handler(httpd_req_t* req);
+esp_err_t register_endpoint_control_power(httpd_handle_t server);
 
 esp_err_t ledriver_start_webpanel_server(void) {
     if (server)
@@ -49,6 +50,13 @@ esp_err_t ledriver_start_webpanel_server(void) {
     }
 
     result = httpd_register_uri_handler(server, &ota_uri);
+    if (result != ESP_OK) {
+        httpd_stop(server);
+        server = NULL;
+        return result;
+    }
+
+    result = register_endpoint_control_power(server);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;

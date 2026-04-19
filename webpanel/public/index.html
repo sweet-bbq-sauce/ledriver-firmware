@@ -12,7 +12,8 @@
 
     <input type="range" min="0" max="65535" oninput="update_color(this, 'red');"><br>
     <input type="range" min="0" max="65535" oninput="update_color(this, 'green');"><br>
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');">
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');"><br><br>
+    <input type="checkbox" onclick="set_power(this);" onload="update_power(this)">
 
     <script>
         const ws = new WebSocket('/control/rgb');
@@ -37,6 +38,28 @@
             view.setUint16(4, state.blue, false);
 
             ws.send(buf);
+        }
+
+        function set_power(checkbox) {
+            const req = fetch('/control/power', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ power: checkbox.checked }) });
+            req.then(response => {
+                if (response.ok)
+                    console.log(`power: ${checkbox.checked}`);
+                else
+                    alert("Can't power");
+            });
+        }
+
+        function check_power(checkbox) {
+            const req = fetch('/control/power');
+            req.then(response => {
+                response.json().then(json => {
+                    const result = JSON.parse(json);
+                    console.log(result);
+                    if (typeof result.power == 'boolean')
+                        checkbox.value = result.power;
+                });
+            });
         }
     </script>
 </body>

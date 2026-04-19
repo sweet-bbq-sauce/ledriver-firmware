@@ -12,6 +12,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/httpd.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/partition.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/resource.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/control_power.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/get_ota.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/get_resource.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/ws_rgb_update.c"
