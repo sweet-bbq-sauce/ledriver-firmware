@@ -13,7 +13,7 @@
     <input type="range" min="0" max="65535" oninput="update_color(this, 'red');"><br>
     <input type="range" min="0" max="65535" oninput="update_color(this, 'green');"><br>
     <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');"><br><br>
-    <input type="checkbox" onclick="set_power(this);" onload="update_power(this)">
+    <input type="checkbox" onclick="set_power(this);" id="power">
 
     <script>
         const ws = new WebSocket('/control/rgb');
@@ -40,27 +40,40 @@
             ws.send(buf);
         }
 
-        function set_power(checkbox) {
-            const req = fetch('/control/power', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ power: checkbox.checked }) });
-            req.then(response => {
-                if (response.ok)
-                    console.log(`power: ${checkbox.checked}`);
-                else
-                    alert("Can't power");
-            });
+        async function set_power(checkbox) {
+            const response = await fetch(
+                '/control/power',
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ power: checkbox.checked })
+                }
+            );
+
+            if (response.ok)
+                console.log(`power: ${checkbox.checked}`);
+            else
+                alert("Can't power");
         }
 
-        function check_power(checkbox) {
-            const req = fetch('/control/power');
-            req.then(response => {
-                response.json().then(json => {
-                    const result = JSON.parse(json);
-                    console.log(result);
-                    if (typeof result.power == 'boolean')
-                        checkbox.value = result.power;
-                });
-            });
+        async function check_power(checkbox) {
+            const response = await fetch('/control/power');
+
+            if (!response.ok) {
+                console.error(response.status);
+                return;
+            }
+
+            const result = await response.json();
+
+            if (typeof result.power === 'boolean') {
+                checkbox.checked = result.power;
+            }
         }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            check_power(document.getElementById('power'));
+        });
     </script>
 </body>
 
