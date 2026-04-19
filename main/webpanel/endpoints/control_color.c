@@ -26,7 +26,7 @@ static esp_err_t control_rgb_handler_ws(httpd_req_t* req) {
         return result;
 
     if (frame.type != HTTPD_WS_TYPE_BINARY || frame.len != 6) {
-        ESP_LOGW(TAG, "Invalid ws frame: type=%d len=%u", frame.type, frame.len);
+        ESP_LOGW(TAG, "Invalid ws frame: type=%d len=%zu", frame.type, frame.len);
         return ESP_ERR_INVALID_SIZE;
     }
 

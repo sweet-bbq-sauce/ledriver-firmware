@@ -1,6 +1,16 @@
 CompileFlags:
+  Compiler: clang
+  Add:
+    - --target=x86_64-pc-linux-gnu
+    - -D__XTENSA__
+    - -D__XTENSA_EL__
   Remove:
+    - --target=*
     - -mlongcalls
     - -fno-shrink-wrap
     - -fstrict-volatile-bitfields
     - -fno-tree-switch-conversion
+Diagnostics:
+  Suppress:
+    - pp_file_not_found
+    - pp_expr_bad_token_lparen

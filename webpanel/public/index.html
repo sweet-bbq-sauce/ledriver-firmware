@@ -4,95 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>LEDRiver Control</title>
 </head>
 
 <body>
     <div id="root"></div>
-
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'red');" id="red"><br>
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'green');" id="green"><br>
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');" id="blue"><br><br>
-    <input type="checkbox" onclick="set_power(this);" id="power">
-
-    <script>
-        const ws = new WebSocket('/control/rgb');
-
-        var state = {
-            red: 0,
-            green: 0,
-            blue: 0
-        };
-
-        function update_color(slider, color) {
-            const brightness = slider.value;
-            console.log(`${color}: ${brightness} (${Math.round(brightness / 65535 * 100)}%)`);
-
-            state[color] = brightness;
-
-            const buf = new ArrayBuffer(6);
-            const view = new DataView(buf);
-
-            view.setUint16(0, state.red, false);
-            view.setUint16(2, state.green, false);
-            view.setUint16(4, state.blue, false);
-
-            ws.send(buf);
-        }
-
-        async function set_power(checkbox) {
-            const response = await fetch(
-                '/control/power',
-                {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ power: checkbox.checked })
-                }
-            );
-
-            if (response.ok)
-                console.log(`power: ${checkbox.checked}`);
-            else
-                alert("Can't power");
-        }
-
-        async function check_power(checkbox) {
-            const response = await fetch('/control/power');
-
-            if (!response.ok) {
-                console.error(response.status);
-                return;
-            }
-
-            const result = await response.json();
-
-            if (typeof result.power === 'boolean') {
-                checkbox.checked = result.power;
-            }
-        }
-
-        async function check_color(red_input, green_input, blue_input) {
-            const response = await fetch('/control/color');
-
-            if (!response.ok) {
-                console.error(response.status);
-                return;
-            }
-
-            const result = await response.json();
-
-            if (typeof result.red === 'number' && typeof result.green === 'number' && typeof result.blue === 'number') {
-                red_input.value = state.red = result.red;
-                green_input.value = state.green = result.green;
-                blue_input.value = state.blue = result.blue;
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            check_power(document.getElementById('power'));
-            check_color(document.getElementById('red'), document.getElementById('green'), document.getElementById('blue'));
-        });
-    </script>
 </body>
 
 </html>
