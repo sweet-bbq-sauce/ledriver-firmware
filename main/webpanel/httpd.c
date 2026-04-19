@@ -13,9 +13,9 @@
 static const char* TAG = "httpd";
 static httpd_handle_t server = NULL;
 
-esp_err_t httpd_ws_rgb_handler(httpd_req_t* req);
 esp_err_t httpd_get_ota_handler(httpd_req_t* req);
 esp_err_t httpd_get_resource_handler(httpd_req_t* req);
+esp_err_t register_endpoint_control_color(httpd_handle_t server);
 esp_err_t register_endpoint_control_power(httpd_handle_t server);
 
 esp_err_t ledriver_start_webpanel_server(void) {
@@ -30,19 +30,13 @@ esp_err_t ledriver_start_webpanel_server(void) {
     if (result != ESP_OK)
         return result;
 
-    const httpd_uri_t ws_rgb_uri = {.uri = "/control/rgb",
-                                    .method = HTTP_GET,
-                                    .handler = httpd_ws_rgb_handler,
-                                    .user_ctx = NULL,
-                                    .is_websocket = true};
-
     const httpd_uri_t ota_uri = {
         .uri = "/update", .method = HTTP_GET, .handler = httpd_get_ota_handler, .user_ctx = NULL};
 
     const httpd_uri_t wildcard = {
         .uri = "/*", .method = HTTP_GET, .handler = httpd_get_resource_handler, .user_ctx = NULL};
 
-    result = httpd_register_uri_handler(server, &ws_rgb_uri);
+    result = register_endpoint_control_color(server);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;
