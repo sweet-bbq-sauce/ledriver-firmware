@@ -10,9 +10,9 @@
 <body>
     <div id="root"></div>
 
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'red');"><br>
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'green');"><br>
-    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');"><br><br>
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'red');" id="red"><br>
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'green');" id="green"><br>
+    <input type="range" min="0" max="65535" oninput="update_color(this, 'blue');" id="blue"><br><br>
     <input type="checkbox" onclick="set_power(this);" id="power">
 
     <script>
@@ -71,8 +71,26 @@
             }
         }
 
+        async function check_color(red_input, green_input, blue_input) {
+            const response = await fetch('/control/color');
+
+            if (!response.ok) {
+                console.error(response.status);
+                return;
+            }
+
+            const result = await response.json();
+
+            if (typeof result.red === 'number' && typeof result.green === 'number' && typeof result.blue === 'number') {
+                red_input.value = state.red = result.red;
+                green_input.value = state.green = result.green;
+                blue_input.value = state.blue = result.blue;
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             check_power(document.getElementById('power'));
+            check_color(document.getElementById('red'), document.getElementById('green'), document.getElementById('blue'));
         });
     </script>
 </body>
