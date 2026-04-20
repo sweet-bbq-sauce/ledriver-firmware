@@ -7,7 +7,7 @@ module.exports = (_, argv = {}) => {
 
     return {
         mode: isProd ? 'production' : 'development',
-        entry: './webpanel/index.tsx',
+        entry: './webpanel/src/index.tsx',
         output: {
             path: path.resolve(__dirname, 'webpanel/dist'),
             filename: 'bundle.js',

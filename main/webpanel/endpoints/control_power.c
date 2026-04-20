@@ -19,12 +19,11 @@ static esp_err_t control_power_handler_get(httpd_req_t* req) {
 
     char response[24];
     const int length =
-        snprintf(response, sizeof(response), "{\"power\":%s}", power ? "true" : "false");
+        snprintf(response, sizeof(response), "{\"on\":%s}", power ? "true" : "false");
 
     if (length < 0 || length >= sizeof(response))
         return ESP_FAIL;
 
-    // nie sprawdzam bo nie może być dłuższe niż "{"power":false}"
     result = httpd_resp_set_type(req, "application/json");
     if (result != ESP_OK)
         return result;
@@ -51,7 +50,7 @@ static esp_err_t control_power_handler_put(httpd_req_t* req) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    const cJSON* power_json = cJSON_GetObjectItemCaseSensitive(json, "power");
+    const cJSON* power_json = cJSON_GetObjectItemCaseSensitive(json, "on");
     if (!cJSON_IsBool(power_json)) {
         cJSON_Delete(json);
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Invalid JSON");
