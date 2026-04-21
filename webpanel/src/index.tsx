@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
+import * as device from './config/device';
 import * as color from './control/color';
 import * as power from './control/power';
 import * as utils from './utils';
@@ -87,7 +88,33 @@ createRoot(container).render(
                 id='input_picker'
                 defaultValue={utils.u16_to_hex(state.color)}
                 onChange={event => update_picker(event.target.value)}
-            ></input>
+            ></input><br />
+            <button
+                onClick={async () => {
+                    try {
+                        await device.update();
+                        alert('Device is going to check update. This can cause reboot.');
+                    } catch (err) {
+                        console.error(`Firmware update error: ${err}`);
+                        alert('Firmware updating failed.')
+                    }
+                }
+                }
+            >Check for updates</button><br />
+            <button
+                onClick={async () => {
+                    try {
+                        await device.reboot();
+
+                        alert('Device is going to reboot in 5s.');
+                        setTimeout(() => location.reload(), 7000);
+                    } catch (err) {
+                        console.error(`Device reboot error: ${err}`);
+                        alert('Device can\'t reboot.')
+                    }
+                }
+                }
+            >Reboot device</button>
         </>
     </React.StrictMode>
 );

@@ -13,10 +13,11 @@
 static const char* TAG = "httpd";
 static httpd_handle_t server = NULL;
 
-esp_err_t httpd_get_ota_handler(httpd_req_t* req);
-esp_err_t httpd_get_resource_handler(httpd_req_t* req);
+esp_err_t register_endpoint_config_power(httpd_handle_t server);
+esp_err_t register_endpoint_config_update(httpd_handle_t server);
 esp_err_t register_endpoint_control_color(httpd_handle_t server);
 esp_err_t register_endpoint_control_power(httpd_handle_t server);
+esp_err_t register_endpoint_static(httpd_handle_t server);
 
 esp_err_t ledriver_start_webpanel_server(void) {
     if (server)
@@ -30,20 +31,21 @@ esp_err_t ledriver_start_webpanel_server(void) {
     if (result != ESP_OK)
         return result;
 
-    const httpd_uri_t ota_uri = {
-        .uri = "/update", .method = HTTP_GET, .handler = httpd_get_ota_handler, .user_ctx = NULL};
-
-    const httpd_uri_t wildcard = {
-        .uri = "/*", .method = HTTP_GET, .handler = httpd_get_resource_handler, .user_ctx = NULL};
-
-    result = register_endpoint_control_color(server);
+    result = register_endpoint_config_power(server);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;
         return result;
     }
 
-    result = httpd_register_uri_handler(server, &ota_uri);
+    result = register_endpoint_config_update(server);
+    if (result != ESP_OK) {
+        httpd_stop(server);
+        server = NULL;
+        return result;
+    }
+
+    result = register_endpoint_control_color(server);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;
@@ -57,7 +59,7 @@ esp_err_t ledriver_start_webpanel_server(void) {
         return result;
     }
 
-    result = httpd_register_uri_handler(server, &wildcard);
+    result = register_endpoint_static(server);
     if (result != ESP_OK) {
         httpd_stop(server);
         server = NULL;

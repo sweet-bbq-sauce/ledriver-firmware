@@ -1,18 +1,16 @@
+#include <errno.h>
+
 #include <esp_err.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
 
-#include <assert.h>
-#include <errno.h>
 #include <unistd.h>
 
 #include <webpanel/resource.h>
 
 static const char* TAG = "httpd";
 
-esp_err_t httpd_get_resource_handler(httpd_req_t* req) {
-    assert(req);
-
+static esp_err_t static_handler_get(httpd_req_t* req) {
     if (!req)
         return ESP_ERR_INVALID_ARG;
 
@@ -69,4 +67,11 @@ esp_err_t httpd_get_resource_handler(httpd_req_t* req) {
 
     ledriver_httpd_resource_free(&resource);
     return httpd_resp_send_chunk(req, NULL, 0);
+}
+
+esp_err_t register_endpoint_static(httpd_handle_t server) {
+    static const httpd_uri_t uri = {
+        .uri = "/*", .method = HTTP_GET, .handler = static_handler_get, .user_ctx = NULL};
+
+    return httpd_register_uri_handler(server, &uri);
 }

@@ -12,10 +12,11 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/httpd.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/partition.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/resource.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/config_power.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/config_update.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/control_color.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/control_power.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/get_ota.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/get_resource.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/webpanel/endpoints/static.c"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/wifi/station.c"
 )
