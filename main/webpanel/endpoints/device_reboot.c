@@ -9,7 +9,7 @@ static void reboot_task(void* arg) {
     vTaskDelete(NULL);
 }
 
-static esp_err_t config_reboot_handler_post(httpd_req_t* req) {
+static esp_err_t device_reboot_handler_post(httpd_req_t* req) {
     httpd_resp_set_status(req, "202 Accepted");
     httpd_resp_send(req, NULL, 0);
 
@@ -17,10 +17,10 @@ static esp_err_t config_reboot_handler_post(httpd_req_t* req) {
     return ESP_OK;
 }
 
-esp_err_t register_endpoint_config_power(httpd_handle_t server) {
-    static const httpd_uri_t uri = {.uri = "/config/reboot",
+esp_err_t register_endpoint_device_power(httpd_handle_t server) {
+    static const httpd_uri_t uri = {.uri = "/device/reboot",
                                     .method = HTTP_POST,
-                                    .handler = config_reboot_handler_post,
+                                    .handler = device_reboot_handler_post,
                                     .user_ctx = NULL};
 
     return httpd_register_uri_handler(server, &uri);

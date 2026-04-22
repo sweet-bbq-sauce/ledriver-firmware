@@ -7,6 +7,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include <utils/device.h>
+
 esp_err_t ledriver_set_timezone(const char* tz) {
     if (!tz)
         return ESP_ERR_INVALID_ARG;

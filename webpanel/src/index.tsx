@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import * as device from './config/device';
+import * as device from './device';
 import * as color from './control/color';
 import * as power from './control/power';
 import * as utils from './utils';
@@ -22,6 +22,8 @@ const container = document.getElementById('root');
 if (!container)
     throw new Error('Container not found');
 
+console.log(await device.version());
+console.log(`Uptime: ${await device.uptime()}s`);
 
 async function update_channel(channel: 'red' | 'green' | 'blue', value: number) {
     state.color = { ...state.color, [channel]: value };

@@ -2,9 +2,8 @@
 #include <esp_log.h>
 #include <nvs_flash.h>
 
-#include <sdkconfig.h>
-
 #include <ledc/ledc.h>
+#include <sdkconfig.h>
 #include <webpanel/partition.h>
 
 static const char* TAG = "main";
