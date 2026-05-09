@@ -38,6 +38,7 @@ idf_component_register(
         esp_https_ota
         driver
         esp_timer
+        esp_driver_ledc
 )
 
 find_program(NPM_EXECUTABLE npm REQUIRED)

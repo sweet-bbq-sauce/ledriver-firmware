@@ -28,7 +28,7 @@ export async function uptime(): Promise<number> {
 }
 
 export async function reboot() {
-    const url = '/config/reboot';
+    const url = '/device/reboot';
     const response = await fetch(url, { method: 'POST' });
 
     if (!response.ok)
